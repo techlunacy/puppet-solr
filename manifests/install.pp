@@ -4,8 +4,7 @@ class solr::install ($source_url, $home_dir, $solr_data_dir, $package, $cores, $
   $solr_package = "${solr_dist_dir}/${package}.war"
   $solr_home_dir = "${home_dir}"
   $destination = "$tmp_dir/$package.tgz"
-
-  package {"openjdk-6-jdk":
+  package {$solr::params::java_package:
     ensure => present,
   }
   package {"tomcat6":
@@ -57,7 +56,7 @@ class solr::install ($source_url, $home_dir, $solr_data_dir, $package, $cores, $
     command => "jar -xf $solr_package",
     cwd => "$solr_home_dir",
     creates => "$solr_home_dir/WEB-INF/web.xml",
-    require => [File["$solr_dist_dir"],Package["openjdk-6-jdk"]],
+    require => [File["$solr_dist_dir"],Package[$solr::params::java_package]],
     path => ["/bin", "/usr/bin", "/usr/sbin"],
   }
 

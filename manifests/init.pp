@@ -21,7 +21,7 @@
 class solr (
       $source_url="http://apache.mirrors.lucidnetworks.net/lucene/solr/4.5.0/solr-4.5.0.tgz",
       $home_dir="/usr/share/solr",
-      $package="apache-solr-4.5.0",
+      $package="solr-4.5.0",
       $solr_data_dir="/var/lib/solr/data",
       $cores = ['development','test'],
       $tomcat_connector_port="8983",

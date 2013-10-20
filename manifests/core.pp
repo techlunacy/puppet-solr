@@ -20,16 +20,16 @@ define solr::core($core_name = $title, $base_data_dir, $solr_home) {
   file { "${core_name}-data-dir":
     ensure => directory,
     path => "${base_data_dir}/${core_name}",
-    owner => "tomcat6",
-    group => "tomcat6",
-    require => Exec["mkdir-p-config-${core_name}"],
+    owner => $solr::params::tomcat_user,
+    group => $solr::params::tomcat_user,
+    require => [Package["tomcat6"],Exec["mkdir-p-config-${core_name}"]],
   }
   
   file { ["${solr_home}/${core_name}/", "${solr_home}/${core_name}/conf/"]:
     ensure => directory,
-    owner => "tomcat6",
-    group => "tomcat6",
-    require => Exec["mkdir-p-${core_name}"],
+    owner => $solr::params::tomcat_user,
+    group => $solr::params::tomcat_user,
+    require => [Package["tomcat6"], Exec["mkdir-p-${core_name}"]],
   }
 
   #Copy the respective solrconfig.xml file
@@ -37,9 +37,9 @@ define solr::core($core_name = $title, $base_data_dir, $solr_home) {
     ensure => file,
     path => "${solr_home}/${core_name}/conf/solrconfig.xml",
     content => template('solr/solrconfig.xml.erb'),
-    require => File["${solr_home}/${core_name}/conf/"],
-    group   => "tomcat6",
-    owner   => "tomcat6",
+    require => [Package["tomcat6"],File["${solr_home}/${core_name}/conf/"]],
+    owner => $solr::params::tomcat_user,
+    group => $solr::params::tomcat_user,
   }
 
   #Copy the respective schema.xml file
@@ -48,7 +48,7 @@ define solr::core($core_name = $title, $base_data_dir, $solr_home) {
     path => "${solr_home}/${core_name}/conf/schema.xml",
     content => template('solr/schema.xml.erb'),
     require => File["${solr_home}/${core_name}/conf/"],
-    group   => "tomcat6",
-    owner   => "tomcat6",
+    owner => $solr::params::tomcat_user,
+    group => $solr::params::tomcat_user,
   }  
 }

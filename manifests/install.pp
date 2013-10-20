@@ -29,6 +29,7 @@ class solr::install ($source_url, $home_dir, $solr_data_dir, $package, $cores, $
     command => "wget $source_url",
     creates => "$destination",
     cwd => "$tmp_dir",
+    timeout => 0,
     path => ["/bin", "/usr/bin", "/usr/sbin"],
     require => Exec["solr_home_dir"],
   }
@@ -47,8 +48,8 @@ class solr::install ($source_url, $home_dir, $solr_data_dir, $package, $cores, $
     require => [Package["tomcat6"],Exec["unpack-solr"]],
     source => "${tmp_dir}/${package}/dist/",
     recurse => true,
-    group   => "tomcat6",
-    owner   => "tomcat6",
+    owner => $solr::params::tomcat_user,
+    group => $solr::params::tomcat_user,
   }
 
   # unpack solr dist into home directory
@@ -66,8 +67,8 @@ class solr::install ($source_url, $home_dir, $solr_data_dir, $package, $cores, $
     require => [Package["tomcat6"],Exec["unpack-solr"]],
     source => "${tmp_dir}/$package/example/solr",
     recurse => true,
-    group   => "tomcat6",
-    owner   => "tomcat6",
+    owner => $solr::params::tomcat_user,
+    group => $solr::params::tomcat_user,
   }
 
   file { "/etc/tomcat6/Catalina/localhost/solr.xml":
@@ -75,8 +76,8 @@ class solr::install ($source_url, $home_dir, $solr_data_dir, $package, $cores, $
     content => template("solr/tomcat_solr.xml.erb"),
     require => [Package["tomcat6"],File[$solr_home_dir]],
     notify  => Service['tomcat6'],
-    group   => "tomcat6",
-    owner   => "tomcat6",
+    owner => $solr::params::tomcat_user,
+    group => $solr::params::tomcat_user,
   }
 
   # Tomcat config file
@@ -93,14 +94,14 @@ class solr::install ($source_url, $home_dir, $solr_data_dir, $package, $cores, $
     path => "/etc/tomcat6/server.xml",
     ensure => present,
     content => template("solr/tomcat_server.xml.erb"),
-    require => File["/etc/tomcat6"],
+    require => [File["/etc/tomcat6"]],
     notify  => Service['tomcat6'],
   }
 
-  # Fix Tomcat config permissions
+  # # Fix Tomcat config permissions
   exec { 'fix-tomcat-config-permissions':
     require => [Package["tomcat6"], File['tomcat-config']],
-    command => "chown tomcat6:tomcat6 /etc/tomcat6/server.xml",
+    command => "chown $solr::params::tomcat_user:$solr::params::tomcat_user /etc/tomcat6/server.xml",
     path => ["/bin", "/usr/bin", "/usr/sbin"],
   }
 
@@ -117,7 +118,8 @@ class solr::install ($source_url, $home_dir, $solr_data_dir, $package, $cores, $
     ensure => present,
     content => template("solr/solr.xml.erb"),
     notify  => Service['tomcat6'],
-    group   => "tomcat6",
-    owner   => "tomcat6",
+    require => [Package["tomcat6"]],
+    owner => $solr::params::tomcat_user,
+    group => $solr::params::tomcat_user,
   }
 }
